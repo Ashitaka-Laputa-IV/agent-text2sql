@@ -1,3 +1,5 @@
+import pathlib
+
 from langchain_openai import ChatOpenAI
 from langchain_community.agent_toolkits import SQLDatabaseToolkit
 from langchain_community.utilities import SQLDatabase
@@ -31,7 +33,8 @@ agent = create_deep_agent(
     subagents=[],
     name="text2sql_agent",
     checkpointer=checkpointer,
-    memory=["./AGENTS.md"],
+    # 基于模块路径定位，避免从项目根目录运行时 CWD 不同导致加载不到
+    memory=[str(pathlib.Path(__file__).with_name("AGENTS.md"))],
     system_prompt=(
         "你是一个 Text2SQL 智能体，专门将用户的自然语言问题转换为可在 SQL 数据库上执行的只读 SELECT 查询，"
         "并返回清晰、可读的答案。你只能执行只读查询，任何会修改数据或结构的语句都将被拒绝。\n"
