@@ -48,4 +48,5 @@ if __name__ == "__main__":
     result = agent.invoke(
         {"messages": [{"role": "user", "content": "列出数据库中所有的表名"}]}
     )
-    print(result["messages"][-1].content)
+    for msg in result["messages"]:
+        print(f"[{msg.type}] {msg.content}")
