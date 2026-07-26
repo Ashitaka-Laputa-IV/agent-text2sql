@@ -10,7 +10,7 @@
    uv sync
    ```
 
-4. 参考代码配置 `.env` 和 `example.env`（两者内容相同，`.env` 为 `example.env` 的拷贝）：
+4. 参考代码配置 `.env` 和 `example.env`（两者内容相同，`.env` 为 `example.env` 的拷贝）(但是example.env 不能包含密钥!)：
    ```bash
    cp example.env .env
    ```
@@ -30,3 +30,17 @@
 6. 不要创建任何`py`文件测试.
 
 7. 使用清华源下载任何东西, 避免用原本的下载地址
+
+8. 创建 `.gitignore` 文件，忽略包含密钥的 `.env` 与虚拟环境 `.venv`，避免敏感信息与本地环境被提交到仓库：
+   ```gitignore
+   # 虚拟环境
+   .venv/
+
+   # 本地密钥配置（含 API Key，禁止提交）
+   .env
+
+   # Python
+   __pycache__/
+   *.pyc
+   ```
+   - 注意：`.env` 必须被忽略；`example.env` 仅为模板（不含密钥），可正常提交。
