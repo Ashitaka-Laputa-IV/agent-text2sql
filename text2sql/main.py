@@ -48,6 +48,9 @@ if __name__ == "__main__":
 
     console = Console()
     messages = []
+    console.print("[bold cyan]Text2SQL 智能体已就绪[/bold cyan]")
+    console.print("我能将自然语言转为 SQL 并查询数据库，也可读写本地文件、执行 shell 命令。")
+    console.print("输入问题开始对话，Ctrl+C 退出。\n")
     while True:
         try:
             content = Prompt.ask("\n[green]你[/green]")
