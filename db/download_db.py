@@ -1,19 +1,8 @@
-"""
-AdventureWorksLT.db 下载说明与脚本
-
-说明:
-    AdventureWorksLT.db 是 Microsoft 提供的示例数据库, 体积较大,
-    已在 `.gitignore` 中忽略 (db/AdventureWorksLT.db), 不纳入版本控制.
-
-    运行本脚本会自动把数据库下载到本文件所在目录 (db/).
-
-下载来源:
-    https://github.com/Ashitaka-Laputa-IV/adeventure_works_db/blob/main/AdventureWorksLT.db
+"""下载 AdventureWorksLT.db 到本目录 (db/)。
 
 用法:
-    python a.txt
+    python download_db.py
 """
-
 import os
 import urllib.request
 
