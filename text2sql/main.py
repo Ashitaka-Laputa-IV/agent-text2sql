@@ -76,7 +76,8 @@ if __name__ == "__main__":
                     answer = msg.content
         printed = len(result["messages"])
         for tc in tool_calls:
-            console.print(f"[cyan]工具调用 {tc['name']}[/cyan]: {tc['args']}")
+            sql = tc["args"].get("query")
+            console.print(f"[cyan]工具调用 {tc['name']}[/cyan]: {sql if sql is not None else tc['args']}")
         if answer is not None:
             console.print("[green]结果:[/green]")
             console.print(Markdown(answer))
