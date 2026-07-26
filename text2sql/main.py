@@ -1,11 +1,3 @@
-"""text2sql 入口：从 `.env` 加载模型配置并构建 DeepSeek 聊天模型。
-
-`.env` 中包含：
-    model_name=deepseek-v4-flash
-    model_base_url=https://api.deepseek.com
-    model_api=<你的 API Key>
-"""
-
 import os
 
 from dotenv import load_dotenv
