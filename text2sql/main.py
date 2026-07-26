@@ -6,6 +6,7 @@ from langchain_openai import ChatOpenAI
 from langchain_community.agent_toolkits import SQLDatabaseToolkit
 from langchain_community.utilities import SQLDatabase
 from deepagents import create_deep_agent
+from deepagents.backends import LocalShellBackend
 
 load_dotenv()
 
@@ -30,8 +31,11 @@ db = SQLDatabase.from_uri(DB_URI)
 toolkit = SQLDatabaseToolkit(db=db, llm=model)
 tools = toolkit.get_tools()
 
+backend = LocalShellBackend(root_dir=PROJECT_ROOT)
+
 agent = create_deep_agent(
     model=model,
     tools=tools,
+    backend=backend,
     memory=["./AGENTS.md"],
 )
