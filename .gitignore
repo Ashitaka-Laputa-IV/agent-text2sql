@@ -8,3 +8,6 @@
 __pycache__/
 *.pyc
 .ruff_cache/
+
+# 环境搭建说明（不纳入版本控制）
+ENV.md
