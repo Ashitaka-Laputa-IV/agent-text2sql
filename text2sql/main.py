@@ -50,6 +50,7 @@ if __name__ == "__main__":
 
     from rich.console import Console
     from rich.markdown import Markdown
+    from rich.panel import Panel
     from rich.prompt import Prompt
     from rich.syntax import Syntax
 
@@ -64,6 +65,7 @@ if __name__ == "__main__":
             content = Prompt.ask("\n[green]你[/green]")
         except (EOFError, KeyboardInterrupt):
             break
+        console.print(Panel(content, title="你", border_style="green"))
         result = agent.invoke(
             {"messages": [{"role": "user", "content": content}]},
             config=config,
@@ -79,7 +81,6 @@ if __name__ == "__main__":
         for tc in tool_calls:
             if tc["name"] != "sql_db_query":
                 continue
-            console.print(Syntax(tc["args"].get("query"), "sql", theme="ansi_dark"))
+            console.print(Panel(Syntax(tc["args"].get("query"), "sql", theme="ansi_dark"), title="SQL", border_style="cyan"))
         if answer is not None:
-            console.print("[green]结果:[/green]")
-            console.print(Markdown(answer))
+            console.print(Panel(Markdown(answer), title="结果", border_style="green"))
