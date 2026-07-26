@@ -46,7 +46,7 @@ if __name__ == "__main__":
     # 示例：用自然语言提问，由智能体生成并执行 SQL，
     # 也可调用本地文件读写与 shell 命令（execute 工具）。
     result = agent.invoke(
-        {"messages": [{"role": "user", "content": "列出数据库中所有的表名"}]}
+        {"messages": [{"role": "user", "content": "列出数据库中所有的表名，并分别统计每个表包含的记录行数"}]}
     )
     for msg in result["messages"]:
         print(f"=== {msg.type} ===")
