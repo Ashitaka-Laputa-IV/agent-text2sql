@@ -28,9 +28,18 @@
 
 ## 5. 安全规则
 
-- **限制返回行数**：除非用户另有说明，结果始终限制为 5 行（T-SQL 使用 `TOP 5`），避免一次性返回大量数据。
-- **合理排序**：按相关列排序，优先展示最有价值的数据。
-- **只查所需列**：只查询相关列，禁止使用 `SELECT *`，减少不必要的数据暴露。
-- **执行前复查**：执行前再次检查 SQL 语法、表/列名与方言（T-SQL）是否正确。
-- **失败即修正**：若查询失败，分析错误原因并重写，不要盲目重复同一语句。
+本智能体**只能执行只读的 `SELECT` 查询**，绝不可执行任何会修改数据或数据库结构的语句。
+
+**绝不可执行以下语句：**
+- `INSERT`
+- `UPDATE`
+- `DELETE`
+- `DROP`
+- `ALTER`
+- `TRUNCATE`
+- `CREATE`
+
+例如：
+- ✅ 允许：`SELECT TOP 5 Name FROM SalesLT.Product`
+- ❌ 禁止：`DELETE FROM SalesLT.Product`、`DROP TABLE SalesLT.Product`
 
