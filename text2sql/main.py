@@ -6,7 +6,6 @@ from langchain_openai import ChatOpenAI
 from langchain_community.agent_toolkits import SQLDatabaseToolkit
 from langchain_community.utilities import SQLDatabase
 from deepagents import create_deep_agent
-from deepagents.backends import LocalShellBackend
 from langgraph.checkpoint.memory import MemorySaver
 
 load_dotenv()
@@ -33,13 +32,11 @@ db = SQLDatabase.from_uri(DB_URI)
 toolkit = SQLDatabaseToolkit(db=db, llm=model)
 tools = toolkit.get_tools()
 
-backend = LocalShellBackend(root_dir=PROJECT_ROOT, virtual_mode=False)
 checkpointer = MemorySaver()
 
 agent = create_deep_agent(
     model=model,
     tools=tools,
-    backend=backend,
     checkpointer=checkpointer,
     memory=["./AGENTS.md"],
 )
@@ -55,7 +52,7 @@ if __name__ == "__main__":
     config = {"configurable": {"thread_id": str(uuid.uuid4())}}
     printed = 0
     console.print("[bold cyan]Text2SQL 智能体已就绪[/bold cyan]")
-    console.print("我能将自然语言转为 SQL 并查询数据库，也可读写本地文件、执行 shell 命令。")
+    console.print("我能将自然语言转为 SQL 并查询数据库。")
     console.print("输入问题开始对话，Ctrl+C 退出。\n")
     while True:
         try:
