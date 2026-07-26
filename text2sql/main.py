@@ -32,7 +32,7 @@ db = SQLDatabase.from_uri(DB_URI)
 toolkit = SQLDatabaseToolkit(db=db, llm=model)
 tools = toolkit.get_tools()
 
-backend = LocalShellBackend(root_dir=PROJECT_ROOT)
+backend = LocalShellBackend(root_dir=PROJECT_ROOT, virtual_mode=False)
 
 agent = create_deep_agent(
     model=model,
