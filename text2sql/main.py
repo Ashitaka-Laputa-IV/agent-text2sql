@@ -49,4 +49,5 @@ if __name__ == "__main__":
         {"messages": [{"role": "user", "content": "列出数据库中所有的表名"}]}
     )
     for msg in result["messages"]:
-        print(f"[{msg.type}] {msg.content}")
+        print(f"=== {msg.type} ===")
+        print(msg)
