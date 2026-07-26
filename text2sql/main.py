@@ -16,4 +16,7 @@ model = ChatOpenAI(
     api_key=MODEL_API,
 )
 
-agent = create_deep_agent(model=model)
+agent = create_deep_agent(
+    model=model,
+    memory=["text2sql/AGENTS.md"],
+)
