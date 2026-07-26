@@ -25,6 +25,7 @@ agent = create_deep_agent(
     tools=tools,
     backend=backend,
     subagents=[],
+    name="text2sql_agent",
     checkpointer=checkpointer,
     memory=["./AGENTS.md"],
 )
