@@ -49,13 +49,10 @@ if __name__ == "__main__":
     console = Console()
     messages = []
     while True:
-        if not messages:
-            content = "列出数据库中所有的表名，并分别统计每个表包含的记录行数"
-        else:
-            try:
-                content = Prompt.ask("\n[green]你[/green]")
-            except (EOFError, KeyboardInterrupt):
-                break
+        try:
+            content = Prompt.ask("\n[green]你[/green]")
+        except (EOFError, KeyboardInterrupt):
+            break
         messages.append({"role": "user", "content": content})
         result = agent.invoke({"messages": messages})
         for msg in result["messages"]:
