@@ -1,6 +1,6 @@
-"""从 `.env` 加载模型配置，并构建 DeepSeek 聊天模型。
+"""text2sql 入口：从 `.env` 加载模型配置并构建 DeepSeek 聊天模型。
 
-依赖 `python-dotenv` 读取本地 `.env`，其中包含：
+`.env` 中包含：
     model_name=deepseek-v4-flash
     model_base_url=https://api.deepseek.com
     model_api=<你的 API Key>
@@ -41,10 +41,14 @@ def build_chat_model(temperature: float = 0.0):
     )
 
 
-if __name__ == "__main__":
+def main() -> None:
     cfg = get_model_config()
     masked = (cfg["model_api"][:6] + "****" + cfg["model_api"][-4:]) if cfg["model_api"] else "<空>"
     print("已加载模型配置：")
     print(f"  model_name     = {cfg['model_name']}")
     print(f"  model_base_url = {cfg['model_base_url']}")
     print(f"  model_api      = {masked}")
+
+
+if __name__ == "__main__":
+    main()
