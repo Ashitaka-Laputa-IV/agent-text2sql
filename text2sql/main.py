@@ -46,6 +46,7 @@ if __name__ == "__main__":
     import uuid
 
     from rich.console import Console
+    from rich.markdown import Markdown
     from rich.prompt import Prompt
 
     console = Console()
@@ -74,4 +75,5 @@ if __name__ == "__main__":
         for tc in tool_calls:
             console.print(f"[cyan]工具调用 {tc['name']}[/cyan]: {tc['args']}")
         if answer is not None:
-            console.print(f"[green]结果:[/green] {answer}")
+            console.print("[green]结果:[/green]")
+            console.print(Markdown(answer))
