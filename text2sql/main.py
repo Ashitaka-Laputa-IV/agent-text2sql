@@ -6,6 +6,7 @@ from langchain_openai import ChatOpenAI
 from langchain_community.agent_toolkits import SQLDatabaseToolkit
 from langchain_community.utilities import SQLDatabase
 from deepagents import create_deep_agent
+from deepagents.backends import StateBackend
 from langgraph.checkpoint.memory import MemorySaver
 
 load_dotenv()
@@ -37,6 +38,7 @@ checkpointer = MemorySaver()
 agent = create_deep_agent(
     model=model,
     tools=tools,
+    backend=backend,
     checkpointer=checkpointer,
     memory=["./AGENTS.md"],
 )
