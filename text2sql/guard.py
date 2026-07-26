@@ -1,16 +1,11 @@
-"""代码层安全防护：确保 SQL 查询工具只能执行只读 SELECT。
+"""代码层安全防护：确保 SQL 查询工具只能执行只读 SELECT/WITH。
 
 AGENTS.md 的声明只是提示词约束，无法阻止模型生成写语句。
-本模块在工具执行前拦截所有会修改数据或结构的语句，并给出明确拒绝信息。
+本模块在工具执行前拦截所有非只读语句（INSERT、UPDATE、DELETE、DROP、
+PRAGMA、ATTACH 等），仅放行以 SELECT/WITH 开头的单条查询，并给出明确拒绝信息。
 """
 
 import re
-
-# 禁止出现的写/修改类关键字
-FORBIDDEN_KEYWORDS = (
-    "insert", "update", "delete", "drop", "alter", "truncate",
-    "create", "replace", "grant", "revoke", "merge", "exec", "execute",
-)
 
 
 def normalize_sql(sql: str) -> str:
@@ -22,29 +17,49 @@ def normalize_sql(sql: str) -> str:
     return " ".join(sql.lower().split())
 
 
-def find_forbidden_keyword(sql: str) -> str | None:
-    """返回 SQL 中命中的禁止关键字；若没有则返回 None。"""
-    normalized = normalize_sql(sql)
-    for kw in FORBIDDEN_KEYWORDS:
-        if re.search(rf"(?<![\w]){kw}(?![\w])", normalized):
-            return kw
-    return None
+def is_readonly(sql: str) -> bool:
+    """判断 SQL 是否为只读查询。
+
+    采用白名单：仅放行以 SELECT 或 WITH 开头的单条语句。
+    拒绝多语句堆叠（如 `SELECT 1; DROP TABLE x`），以及任何非 SELECT/WITH 的写法，
+    从而一并挡住 PRAGMA、ATTACH、INSERT、UPDATE、DELETE、DROP 等写路径。
+    """
+    normalized = normalize_sql(sql).strip().rstrip(";")
+    if ";" in normalized:
+        return False
+    return normalized.startswith("select") or normalized.startswith("with")
+
+
+def _reject(sql: str) -> str:
+    return (
+        f"⛔ 安全限制：仅允许只读 SELECT/WITH 查询。"
+        f"检测到非只读语句，已拒绝执行：{sql[:200]}"
+    )
 
 
 def guard_sql_query_tool(tool) -> None:
-    """原地包装 sql_db_query 工具的 _run，拦截写语句（同步/异步均覆盖）。"""
-    original_run = tool._run
+    """原地包装 sql_db_query 工具的 invoke/ainvoke，仅放行只读 SELECT/WITH 语句。
 
-    def _run(query, *args, **kwargs):
-        hit = find_forbidden_keyword(query)
-        if hit:
-            return (
-                f"⛔ 安全限制：检测到禁止的关键字 '{hit.upper()}'。"
-                f"本智能体只能执行只读 SELECT 查询，已拒绝该语句。"
-            )
-        return original_run(query, *args, **kwargs)
+    通过包装公开 API（invoke/ainvoke）同时覆盖同步与异步调用路径，
+    不依赖 LangChain 内部私有属性（_run/_arun），版本升级更稳健。
+    """
+    original_invoke = tool.invoke
+    original_ainvoke = tool.ainvoke
 
-    tool._run = _run
+    def invoke(inputs, *args, **kwargs):
+        sql = inputs.get("query") if isinstance(inputs, dict) else str(inputs)
+        if not is_readonly(sql):
+            return _reject(sql)
+        return original_invoke(inputs, *args, **kwargs)
+
+    async def ainvoke(inputs, *args, **kwargs):
+        sql = inputs.get("query") if isinstance(inputs, dict) else str(inputs)
+        if not is_readonly(sql):
+            return _reject(sql)
+        return await original_ainvoke(inputs, *args, **kwargs)
+
+    tool.invoke = invoke
+    tool.ainvoke = ainvoke
 
 
 def apply_readonly_guard(tools) -> None:
