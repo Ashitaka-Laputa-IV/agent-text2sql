@@ -24,6 +24,7 @@ agent = create_deep_agent(
     model=model,
     tools=tools,
     backend=backend,
+    subagents=[],
     checkpointer=checkpointer,
     memory=["./AGENTS.md"],
 )
