@@ -65,7 +65,6 @@ if __name__ == "__main__":
             content = Prompt.ask("\n[green]你[/green]")
         except (EOFError, KeyboardInterrupt):
             break
-        console.print(Panel(content, title="你", border_style="green"))
         result = agent.invoke(
             {"messages": [{"role": "user", "content": content}]},
             config=config,
@@ -78,9 +77,11 @@ if __name__ == "__main__":
                 else:
                     answer = msg.content
         printed = len(result["messages"])
+        # 打印每条执行的 SQL 查询语句
         for tc in tool_calls:
             if tc["name"] != "sql_db_query":
                 continue
             console.print(Panel(Syntax(tc["args"].get("query"), "sql", theme="ansi_dark"), title="SQL", border_style="cyan"))
+        # 打印智能体最终回答
         if answer is not None:
             console.print(Panel(Markdown(answer), title="结果", border_style="green"))
