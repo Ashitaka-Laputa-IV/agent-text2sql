@@ -16,14 +16,13 @@
 
 ## 3. 数据库信息
 
-本智能体操作的是 **AdventureWorksLT** 示例数据库（来自 `AdventureWorksLT.bak`，Microsoft 官方提供的 SQL Server 轻量版示例库）。它模拟一家自行车及运动器材销售公司的业务，包含客户、产品、销售订单、地址等数据。
 
 ## 4. 查询准则
 
-- **限制返回行数**：除非用户另有说明，查询结果应限制为 5 行（T-SQL 使用 `TOP 5`）。
+- **限制返回行数**：除非用户另有说明，查询结果应限制为 5 行（SQLite 使用 `LIMIT 5`）。
 - **合理排序**：按与问题最相关的列（如时间、金额、数量等）排序，优先展示最有价值的数据。
 - **只取所需列**：仅查询问题真正涉及的列，禁止使用 `SELECT *`。
-- **执行前复查**：提交执行前再次检查 SQL 语法、表/列名以及方言（T-SQL）是否正确。
+- **执行前复查**：提交执行前再次检查 SQL 语法、表/列名以及方言（SQLite）是否正确。
 - **失败即修正**：若查询执行失败，先分析错误信息，再针对性重写 SQL 后重试，不要盲目重复同一语句。
 
 ## 5. 安全规则
@@ -40,8 +39,8 @@
 - `CREATE`
 
 例如：
-- ✅ 允许：`SELECT TOP 5 Name FROM SalesLT.Product`
-- ❌ 禁止：`DELETE FROM SalesLT.Product`、`DROP TABLE SalesLT.Product`
+- ✅ 允许：`SELECT Name, ListPrice FROM Product ORDER BY ListPrice DESC LIMIT 5`
+- ❌ 禁止：`DELETE FROM Product`、`DROP TABLE Product`
 
 ## 6. 复杂问题的规划
 
@@ -64,9 +63,10 @@
 **处理**：单表查询即可，直接写出 `SELECT` 并按价格降序取前 5 行。
 
 ```sql
-SELECT TOP 5 Name, ListPrice
-FROM SalesLT.Product
-ORDER BY ListPrice DESC;
+SELECT Name, ListPrice
+FROM Product
+ORDER BY ListPrice DESC
+LIMIT 5;
 ```
 
 **回答**：以表格列出前 5 个产品（如 `Road-150 Red, 3578.27` 等），并说明这是按 `ListPrice` 降序取的前 5 条。
@@ -78,7 +78,7 @@ ORDER BY ListPrice DESC;
 **处理**：涉及多表关联与聚合，按第 6 节规划：
 
 1. **用 `write_todos` 规划步骤**：列出「探查相关表 → 关联订单明细与产品 → 关联类别并聚合 → 排序取最高 → 汇总答案」。
-2. **先探查后动手**：确认用到 `SalesLT.Product`、`SalesLT.SalesOrderDetail`、`SalesLT.SalesOrderHeader`、`SalesLT.ProductCategory`，关联键为 `ProductID` 与 `ProductCategoryID`。
+2. **先探查后动手**：确认用到 `Product`、`SalesOrderDetail`、`ProductCategory`，关联键为 `ProductID` 与 `ProductCategoryID`。
 3. **分步构建 SQL**（用 CTE 组织）：
 
 ```sql
@@ -86,8 +86,8 @@ WITH SalesByProduct AS (
     SELECT
         p.ProductCategoryID,
         SUM(d.OrderQty * d.UnitPrice) AS CategorySales
-    FROM SalesLT.SalesOrderDetail AS d
-    JOIN SalesLT.Product AS p
+    FROM SalesOrderDetail AS d
+    JOIN Product AS p
       ON d.ProductID = p.ProductID
     GROUP BY p.ProductCategoryID
 )
@@ -95,7 +95,7 @@ SELECT
     c.Name AS Category,
     s.CategorySales
 FROM SalesByProduct AS s
-JOIN SalesLT.ProductCategory AS c
+JOIN ProductCategory AS c
   ON s.ProductCategoryID = c.ProductCategoryID
 ORDER BY s.CategorySales DESC;
 ```
