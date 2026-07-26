@@ -16,6 +16,7 @@ MODEL_API: str = os.getenv("model_api", "")
 DB_URI: str = os.getenv("db_uri", "")
 
 PROJECT_ROOT: pathlib.Path = pathlib.Path(__file__).resolve().parent.parent
+
 if DB_URI.startswith("sqlite:///"):
     _path_part = DB_URI[len("sqlite:///"):]
     if not os.path.isabs(_path_part):
@@ -39,3 +40,12 @@ agent = create_deep_agent(
     backend=backend,
     memory=["./AGENTS.md"],
 )
+
+
+if __name__ == "__main__":
+    # 示例：用自然语言提问，由智能体生成并执行 SQL，
+    # 也可调用本地文件读写与 shell 命令（execute 工具）。
+    result = agent.invoke(
+        {"messages": [{"role": "user", "content": "列出数据库中所有的表名"}]}
+    )
+    print(result["messages"][-1].content)
