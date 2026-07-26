@@ -76,4 +76,8 @@ agent = create_deep_agent(
     name="text2sql_agent",
     checkpointer=checkpointer,
     memory=["./AGENTS.md"],
+    system_prompt=(
+        "你是一个 Text2SQL 智能体，专门将用户的自然语言问题转换为可在 SQL 数据库上执行的只读 SELECT 查询，"
+        "并返回清晰、可读的答案。你只能执行只读查询，任何会修改数据或结构的语句都将被拒绝。"
+    ),
 )
