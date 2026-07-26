@@ -34,6 +34,7 @@ toolkit = SQLDatabaseToolkit(db=db, llm=model)
 tools = toolkit.get_tools()
 
 checkpointer = MemorySaver()
+backend = StateBackend()
 
 agent = create_deep_agent(
     model=model,
