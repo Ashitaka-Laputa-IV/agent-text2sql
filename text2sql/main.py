@@ -58,6 +58,14 @@ if __name__ == "__main__":
             break
         messages.append({"role": "user", "content": content})
         result = agent.invoke({"messages": messages})
+        tool_calls, answer = [], None
         for msg in result["messages"]:
-            console.print(f"[bold]== {msg.type} ==[/bold]")
-            console.print(msg)
+            if msg.type == "ai":
+                if getattr(msg, "tool_calls", None):
+                    tool_calls.extend(msg.tool_calls)
+                else:
+                    answer = msg.content
+        for tc in tool_calls:
+            console.print(f"[cyan]工具调用 {tc['name']}[/cyan]: {tc['args']}")
+        if answer is not None:
+            console.print(f"[green]结果:[/green] {answer}")
