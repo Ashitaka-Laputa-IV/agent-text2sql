@@ -7,6 +7,10 @@ PRAGMA、ATTACH 等），仅放行以 SELECT/WITH 开头的单条查询，并给
 
 import re
 
+# 数据修改型 CTE 关键字：SQLite 3.8.3+ 允许 WITH ... DELETE/UPDATE/INSERT/REPLACE，
+# 语句以 WITH 开头却执行写操作，需要显式拦截。
+_WRITE_KEYWORDS = re.compile(r"\b(delete|update|insert|replace)\b")
+
 
 def normalize_sql(sql: str) -> str:
     """去除注释与字符串字面量，避免其中的关键字造成误判或绕过。"""
@@ -23,11 +27,16 @@ def is_readonly(sql: str) -> bool:
     采用白名单：仅放行以 SELECT 或 WITH 开头的单条语句。
     拒绝多语句堆叠（如 `SELECT 1; DROP TABLE x`），以及任何非 SELECT/WITH 的写法，
     从而一并挡住 PRAGMA、ATTACH、INSERT、UPDATE、DELETE、DROP 等写路径。
+    对 WITH 开头的语句额外检查数据修改型 CTE（WITH ... DELETE/UPDATE/INSERT/REPLACE）。
     """
     normalized = normalize_sql(sql).strip().rstrip(";")
     if ";" in normalized:
         return False
-    return normalized.startswith("select") or normalized.startswith("with")
+    if normalized.startswith("select"):
+        return True
+    if normalized.startswith("with"):
+        return not _WRITE_KEYWORDS.search(normalized)
+    return False
 
 
 def _reject(sql: str) -> str:

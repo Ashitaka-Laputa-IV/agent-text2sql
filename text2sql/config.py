@@ -12,6 +12,14 @@ DB_URI: str = os.getenv("db_uri", "")
 
 PROJECT_ROOT: pathlib.Path = pathlib.Path(__file__).resolve().parent.parent
 
+# 只读保护（mode=ro）仅对 SQLite 生效；非 SQLite 数据库无法获得引擎级只读兜底，
+# 为避免 WITH 型写语句绕过 guard 后真正落库，显式拒绝非 SQLite 的 db_uri。
+if DB_URI and not DB_URI.startswith("sqlite:///"):
+    raise ValueError(
+        f"仅支持 SQLite 数据库（db_uri 需以 sqlite:/// 开头），"
+        f"当前值无法获得引擎级只读保护：{DB_URI}"
+    )
+
 if DB_URI.startswith("sqlite:///"):
     _path_part = DB_URI[len("sqlite:///"):]
     if not os.path.isabs(_path_part):
