@@ -16,9 +16,7 @@ model = ChatOpenAI(
     api_key=MODEL_API,
 )
 
-AGENTS_MD = os.path.join(os.path.dirname(__file__), "AGENTS.md")
-
 agent = create_deep_agent(
     model=model,
-    memory=[AGENTS_MD],
+    memory=["./AGENTS.md"],
 )
