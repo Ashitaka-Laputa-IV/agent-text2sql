@@ -51,6 +51,7 @@ if __name__ == "__main__":
     from rich.console import Console
     from rich.markdown import Markdown
     from rich.prompt import Prompt
+    from rich.syntax import Syntax
 
     console = Console()
     config = {"configurable": {"thread_id": str(uuid.uuid4())}}
@@ -78,7 +79,7 @@ if __name__ == "__main__":
         for tc in tool_calls:
             if tc["name"] != "sql_db_query":
                 continue
-            console.print(f"[cyan]工具调用 {tc['name']}[/cyan]: {tc['args'].get('query')}")
+            console.print(Syntax(tc["args"].get("query"), "sql", theme="ansi_dark"))
         if answer is not None:
             console.print("[green]结果:[/green]")
             console.print(Markdown(answer))
