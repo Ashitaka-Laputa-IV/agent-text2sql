@@ -16,39 +16,48 @@
 
 ## 3. 数据库信息
 
-本智能体操作的是 **Chinook** 示例数据库。Chinook 模拟一家数字媒体（音乐）销售商店，包含艺术家、专辑、曲目、客户、员工、发票等业务数据。
+本智能体操作的是 **AdventureWorksLT** 示例数据库（来自 `AdventureWorksLT.bak`，Microsoft 官方提供的 SQL Server 轻量版示例库）。它模拟一家自行车及运动器材销售公司的业务，包含客户、产品、销售订单、地址等数据。
+
+> 注意：**AdventureWorksLT 运行在 Microsoft SQL Server 上，生成的 SQL 应为 T-SQL（Transact-SQL）方言**，而非 MySQL/PostgreSQL/SQLite 语法。
 
 ### 核心表与字段
 
-- **Artist**（艺术家）
-  - `ArtistId` (PK), `Name`
-- **Album**（专辑）
-  - `AlbumId` (PK), `Title`, `ArtistId` (FK → Artist)
-- **Track**（曲目）
-  - `TrackId` (PK), `Name`, `AlbumId` (FK → Album), `MediaTypeId` (FK → MediaType), `GenreId` (FK → Genre), `Composer`, `Milliseconds`, `Bytes`, `UnitPrice`
-- **Genre**（流派）
-  - `GenreId` (PK), `Name`
-- **MediaType**（媒体类型）
-  - `MediaTypeId` (PK), `Name`
-- **Playlist**（播放列表）
-  - `PlaylistId` (PK), `Name`
-- **PlaylistTrack**（播放列表-曲目关联）
-  - `PlaylistId` (FK → Playlist), `TrackId` (FK → Track)
+- **BuildVersion**（系统信息）
+  - `SystemInformationID` (PK), `Database Version`, `VersionDate`, `ModifiedDate`
+- **Address**（地址）
+  - `AddressID` (PK), `AddressLine1`, `AddressLine2`, `City`, `StateProvinceID` (FK → StateProvince), `PostalCode`, `rowguid`, `ModifiedDate`
+- **StateProvince**（省/州）
+  - `StateProvinceID` (PK), `StateProvinceCode`, `CountryRegionCode`, `Name`, `TerritoryID` (FK), `rowguid`, `ModifiedDate`
 - **Customer**（客户）
-  - `CustomerId` (PK), `FirstName`, `LastName`, `Company`, `Address`, `City`, `State`, `Country`, `PostalCode`, `Phone`, `Fax`, `Email`, `SupportRepId` (FK → Employee)
-- **Employee**（员工）
-  - `EmployeeId` (PK), `LastName`, `FirstName`, `Title`, `ReportsTo` (FK → Employee), `BirthDate`, `HireDate`, `Address`, `City`, `State`, `Country`, `PostalCode`, `Phone`, `Fax`, `Email`
-- **Invoice**（发票）
-  - `InvoiceId` (PK), `CustomerId` (FK → Customer), `InvoiceDate`, `BillingAddress`, `BillingCity`, `BillingState`, `BillingCountry`, `BillingPostalCode`, `Total`
-- **InvoiceLine**（发票明细）
-  - `InvoiceLineId` (PK), `InvoiceId` (FK → Invoice), `TrackId` (FK → Track), `UnitPrice`, `Quantity`
+  - `CustomerID` (PK), `NameStyle`, `Title`, `FirstName`, `MiddleName`, `LastName`, `Suffix`, `CompanyName`, `SalesPerson`, `EmailAddress`, `Phone`, `PasswordHash`, `PasswordSalt`, `rowguid`, `ModifiedDate`
+- **CustomerAddress**（客户-地址关联）
+  - `CustomerID` (PK, FK → Customer), `AddressID` (PK, FK → Address), `AddressTypeID` (FK), `rowguid`, `ModifiedDate`
+- **Product**（产品）
+  - `ProductID` (PK), `Name`, `ProductNumber`, `MakeFlag`, `Color`, `StandardCost`, `ListPrice`, `Size`, `Weight`, `ProductCategoryID` (FK → ProductCategory), `ProductModelID` (FK → ProductModel), `SellStartDate`, `SellEndDate`, `DiscontinuedDate`, `rowguid`, `ModifiedDate`
+- **ProductCategory**（产品类别）
+  - `ProductCategoryID` (PK), `Name`, `rowguid`, `ModifiedDate`
+- **ProductModel**（产品模型）
+  - `ProductModelID` (PK), `Name`, `CatalogDescription`, `rowguid`, `ModifiedDate`
+- **ProductDescription**（产品描述）
+  - `ProductDescriptionID` (PK), `Description`, `rowguid`, `ModifiedDate`
+- **ProductModelProductDescription**（模型-描述关联）
+  - `ProductModelID` (PK, FK → ProductModel), `ProductDescriptionID` (PK, FK → ProductDescription), `Culture`, `rowguid`, `ModifiedDate`
+- **SalesOrderHeader**（销售订单头）
+  - `SalesOrderID` (PK), `RevisionNumber`, `OrderDate`, `DueDate`, `ShipDate`, `Status`, `OnlineOrderFlag`, `SalesOrderNumber`, `PurchaseOrderNumber`, `AccountNumber`, `CustomerID` (FK → Customer), `ShipToAddressID` (FK → Address), `BillToAddressID` (FK → Address), `ShipMethodID` (FK → ShipMethod), `CreditCardApprovalCode`, `SubTotal`, `TaxAmt`, `Freight`, `TotalDue`, `Comment`, `rowguid`, `ModifiedDate`
+- **SalesOrderDetail**（销售订单明细）
+  - `SalesOrderID` (PK, FK → SalesOrderHeader), `SalesOrderDetailID` (PK), `OrderQty`, `ProductID` (FK → Product), `UnitPrice`, `UnitPriceDiscount`, `LineTotal`, `rowguid`, `ModifiedDate`
+- **ShipMethod**（运输方式）
+  - `ShipMethodID` (PK), `Name`, `ShipBase`, `ShipRate`, `rowguid`, `ModifiedDate`
+- **vGetAllCategories**（视图：类别层级）
+  - `ProductCategoryID`, `ParentProductCategoryID`, `ProductCategoryName`
+- **vProductAndDescription**（视图：产品与描述）
+  - `ProductID`, `Name`, `ProductModel`, `Culture`, `Description`
 
 ### 主要关系
 
-- 一位 `Artist` 可发行多张 `Album`；一张 `Album` 包含多首 `Track`。
-- `Track` 归属某个 `MediaType` 与 `Genre`。
-- `Customer` 由一位 `Employee`（支持代表）服务；`Customer` 拥有多张 `Invoice`。
-- `Invoice` 由多条 `InvoiceLine` 组成，每条明细对应一首 `Track`。
-- `Playlist` 与 `Track` 通过 `PlaylistTrack` 多对多关联。
-- `Employee` 存在自引用的上下级关系（`ReportsTo`）。
+- `Customer` 通过 `CustomerAddress` 关联多个 `Address`；`Address` 归属一个 `StateProvince`。
+- `Product` 归属一个 `ProductCategory` 与一个 `ProductModel`。
+- `ProductModel` 通过 `ProductModelProductDescription` 关联多个 `ProductDescription`（含 `Culture` 多语言）。
+- `SalesOrderHeader` 关联一位 `Customer`、收货/账单 `Address`、`ShipMethod`。
+- `SalesOrderDetail` 属于一张 `SalesOrderHeader`，并对应一个 `Product`。
 
