@@ -10,10 +10,10 @@ MODEL_NAME: str = os.getenv("model_name", "deepseek-v4-flash")
 MODEL_BASE_URL: str = os.getenv("model_base_url", "https://api.deepseek.com")
 MODEL_API: str = os.getenv("model_api", "")
 
-model = ChatOpenAI(
-    model=MODEL_NAME,
-    base_url=MODEL_BASE_URL,
-    api_key=MODEL_API,
+agent = create_deep_agent(
+    model=ChatOpenAI(
+        model=MODEL_NAME,
+        base_url=MODEL_BASE_URL,
+        api_key=MODEL_API,
+    )
 )
-
-agent = create_deep_agent(model=model)
