@@ -55,3 +55,51 @@
 - **用清晰结构组织**：必要时使用 CTE（`WITH ...`）将逻辑分段，提升可读性与可维护性。
 - **整合为最终答案**：最后把各步结果汇总，给出单一、清晰、可读的结论。
 
+## 7. 示例
+
+### 7.1 简单问题
+
+**用户**：列出价格最高的 5 个产品名称及其价格。
+
+**处理**：单表查询即可，直接写出 `SELECT` 并按价格降序取前 5 行。
+
+```sql
+SELECT TOP 5 Name, ListPrice
+FROM SalesLT.Product
+ORDER BY ListPrice DESC;
+```
+
+**回答**：以表格列出前 5 个产品（如 `Road-150 Red, 3578.27` 等），并说明这是按 `ListPrice` 降序取的前 5 条。
+
+### 7.2 复杂问题
+
+**用户**：各产品类别的总销售额是多少？销量最高的类别是哪个？
+
+**处理**：涉及多表关联与聚合，按第 6 节规划：
+
+1. **用 `write_todos` 规划步骤**：列出「探查相关表 → 关联订单明细与产品 → 关联类别并聚合 → 排序取最高 → 汇总答案」。
+2. **先探查后动手**：确认用到 `SalesLT.Product`、`SalesLT.SalesOrderDetail`、`SalesLT.SalesOrderHeader`、`SalesLT.ProductCategory`，关联键为 `ProductID` 与 `ProductCategoryID`。
+3. **分步构建 SQL**（用 CTE 组织）：
+
+```sql
+WITH SalesByProduct AS (
+    SELECT
+        p.ProductCategoryID,
+        SUM(d.OrderQty * d.UnitPrice) AS CategorySales
+    FROM SalesLT.SalesOrderDetail AS d
+    JOIN SalesLT.Product AS p
+      ON d.ProductID = p.ProductID
+    GROUP BY p.ProductCategoryID
+)
+SELECT
+    c.Name AS Category,
+    s.CategorySales
+FROM SalesByProduct AS s
+JOIN SalesLT.ProductCategory AS c
+  ON s.ProductCategoryID = c.ProductCategoryID
+ORDER BY s.CategorySales DESC;
+```
+
+4. **验证与整合**：抽样核对销售额，按销售额降序得出销量最高类别，给出清晰结论与数据表。
+
+
