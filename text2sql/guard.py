@@ -7,6 +7,8 @@ PRAGMA、ATTACH 等），仅放行以 SELECT/WITH 开头的单条查询，并给
 
 import re
 
+from langchain_core.messages import ToolMessage
+
 # 数据修改型 CTE 关键字：SQLite 3.8.3+ 允许 WITH ... DELETE/UPDATE/INSERT/REPLACE，
 # 语句以 WITH 开头却执行写操作，需要显式拦截。
 _WRITE_KEYWORDS = re.compile(r"\b(delete|update|insert|replace)\b")
@@ -55,16 +57,36 @@ def guard_sql_query_tool(tool) -> None:
     original_invoke = tool.invoke
     original_ainvoke = tool.ainvoke
 
+    def _extract_sql(inputs):
+        """兼容三种输入形态：ToolCall dict（SQL 在 args.query）、普通 dict、纯字符串。"""
+        if isinstance(inputs, dict):
+            if isinstance(inputs.get("args"), dict):
+                return inputs["args"].get("query")
+            return inputs.get("query")
+        return str(inputs)
+
+    def _reject_response(inputs, sql):
+        """按输入形态返回拒绝结果：ToolCall 需返回 ToolMessage，否则返回字符串。"""
+        message = _reject(str(sql))
+        if isinstance(inputs, dict) and inputs.get("type") == "tool_call":
+            return ToolMessage(
+                content=message,
+                tool_call_id=inputs.get("id", ""),
+                name=inputs.get("name", tool.name),
+                status="error",
+            )
+        return message
+
     def invoke(inputs, *args, **kwargs):
-        sql = inputs.get("query") if isinstance(inputs, dict) else str(inputs)
+        sql = _extract_sql(inputs)
         if not isinstance(sql, str) or not is_readonly(sql):
-            return _reject(str(sql))
+            return _reject_response(inputs, sql)
         return original_invoke(inputs, *args, **kwargs)
 
     async def ainvoke(inputs, *args, **kwargs):
-        sql = inputs.get("query") if isinstance(inputs, dict) else str(inputs)
+        sql = _extract_sql(inputs)
         if not isinstance(sql, str) or not is_readonly(sql):
-            return _reject(str(sql))
+            return _reject_response(inputs, sql)
         return await original_ainvoke(inputs, *args, **kwargs)
 
     # LangChain 工具是 pydantic 模型，直接赋值未声明字段会被 __setattr__ 拒绝，
