@@ -14,6 +14,7 @@ model = ChatOpenAI(
     model=MODEL_NAME,
     base_url=MODEL_BASE_URL,
     api_key=MODEL_API,
+    temperature=0,
 )
 
 db = SQLDatabase.from_uri(DB_URI)
