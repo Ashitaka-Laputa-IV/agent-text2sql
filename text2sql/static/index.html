@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0f1117">
 <title>Text2SQL 智能体</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11/styles/github-dark.min.css">
 <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
@@ -121,9 +123,9 @@
     color: var(--text);
     font-size: 15px;
   }
-  input[type="text"]:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
   button {
     padding: 12px 22px;
+    min-height: 44px;
     border-radius: 10px;
     border: none;
     background: var(--accent);
@@ -131,6 +133,8 @@
     font-size: 15px;
     cursor: pointer;
   }
+  button:hover { background: #3d7bef; }
+  button:active { background: #2f6bd8; }
   button:disabled { opacity: 0.5; cursor: not-allowed; }
   button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 </style>
