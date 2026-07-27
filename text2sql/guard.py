@@ -57,14 +57,14 @@ def guard_sql_query_tool(tool) -> None:
 
     def invoke(inputs, *args, **kwargs):
         sql = inputs.get("query") if isinstance(inputs, dict) else str(inputs)
-        if not is_readonly(sql):
-            return _reject(sql)
+        if not isinstance(sql, str) or not is_readonly(sql):
+            return _reject(str(sql))
         return original_invoke(inputs, *args, **kwargs)
 
     async def ainvoke(inputs, *args, **kwargs):
         sql = inputs.get("query") if isinstance(inputs, dict) else str(inputs)
-        if not is_readonly(sql):
-            return _reject(sql)
+        if not isinstance(sql, str) or not is_readonly(sql):
+            return _reject(str(sql))
         return await original_ainvoke(inputs, *args, **kwargs)
 
     # LangChain 工具是 pydantic 模型，直接赋值未声明字段会被 __setattr__ 拒绝，
