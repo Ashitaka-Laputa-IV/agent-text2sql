@@ -67,8 +67,10 @@ def guard_sql_query_tool(tool) -> None:
             return _reject(sql)
         return await original_ainvoke(inputs, *args, **kwargs)
 
-    tool.invoke = invoke
-    tool.ainvoke = ainvoke
+    # LangChain 工具是 pydantic 模型，直接赋值未声明字段会被 __setattr__ 拒绝，
+    # 用 object.__setattr__ 绕过校验完成方法替换。
+    object.__setattr__(tool, "invoke", invoke)
+    object.__setattr__(tool, "ainvoke", ainvoke)
 
 
 def apply_readonly_guard(tools) -> None:
