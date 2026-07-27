@@ -3,14 +3,23 @@
 运行：uv run uvicorn server:app --app-dir text2sql
 """
 
+import pathlib
 import uuid
 
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from agent import agent
 
 app = FastAPI(title="Text2SQL Agent")
+
+_INDEX = pathlib.Path(__file__).with_name("static") / "index.html"
+
+
+@app.get("/")
+def index() -> FileResponse:
+    return FileResponse(_INDEX)
 
 
 class ChatRequest(BaseModel):
