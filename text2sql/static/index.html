@@ -7,8 +7,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11/styles/github-dark.min.css">
 <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/highlight.js@11/lib/core.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/highlight.js@11/lib/languages/sql.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11/highlight.min.js"></script>
 <style>
   :root {
     --bg: #0f1117;
@@ -89,7 +88,6 @@
     max-width: 85%;
     font-family: Consolas, monospace;
     font-size: 13px;
-    color: #9ece6a;
     background: #11141b;
     border: 1px solid var(--border);
     border-radius: 8px;
@@ -166,7 +164,14 @@ function addMsg(role, text, sqlList) {
     bubble.textContent = text;
   }
   wrap.appendChild(bubble);
+  const seen = new Set();
   for (const sql of sqlList || []) {
+    const norm = sql.trim();
+    if (!norm) continue;
+    if (seen.has(norm)) continue;
+    // 正文 Markdown 里已经出现过的 SQL 不再重复陈列
+    if (text && text.includes(norm)) continue;
+    seen.add(norm);
     const pre = document.createElement("div");
     pre.className = "sql";
     const code = document.createElement("code");
