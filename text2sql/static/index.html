@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Text2SQL 智能体</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11/styles/github-dark.min.css">
+<script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11/lib/core.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highlight.js@11/lib/languages/sql.min.js"></script>
 <style>
   :root {
     --bg: #0f1117;
@@ -46,9 +51,37 @@
     border-radius: 12px;
     background: var(--panel);
     border: 1px solid var(--border);
-    white-space: pre-wrap;
     word-break: break-word;
     line-height: 1.6;
+  }
+  .msg.user .bubble { white-space: pre-wrap; }
+  .bubble > :first-child { margin-top: 0; }
+  .bubble > :last-child { margin-bottom: 0; }
+  .bubble pre {
+    background: #11141b;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    overflow-x: auto;
+    font-size: 13px;
+  }
+  .bubble code {
+    font-family: Consolas, monospace;
+    font-size: 0.92em;
+    background: #11141b;
+    border-radius: 4px;
+    padding: 1px 5px;
+  }
+  .bubble pre code { background: none; padding: 0; }
+  .bubble table { border-collapse: collapse; margin: 8px 0; }
+  .bubble th, .bubble td { border: 1px solid var(--border); padding: 6px 10px; }
+  .bubble th { background: #11141b; }
+  .bubble a { color: var(--accent); }
+  .bubble blockquote {
+    margin: 8px 0;
+    padding-left: 12px;
+    border-left: 3px solid var(--border);
+    color: var(--muted);
   }
   .msg.user .bubble { background: var(--user-bubble); border-color: transparent; }
   .sql {
@@ -113,17 +146,30 @@ const input = document.getElementById("input");
 const send = document.getElementById("send");
 let threadId = null;
 
+function renderMarkdown(el, text) {
+  el.innerHTML = DOMPurify.sanitize(marked.parse(text));
+  el.querySelectorAll("pre code").forEach((block) => hljs.highlightElement(block));
+}
+
 function addMsg(role, text, sqlList) {
   const wrap = document.createElement("div");
   wrap.className = "msg " + role;
   const bubble = document.createElement("div");
   bubble.className = "bubble";
-  bubble.textContent = text;
+  if (role === "assistant" && text) {
+    renderMarkdown(bubble, text);
+  } else {
+    bubble.textContent = text;
+  }
   wrap.appendChild(bubble);
   for (const sql of sqlList || []) {
     const pre = document.createElement("div");
     pre.className = "sql";
-    pre.textContent = sql;
+    const code = document.createElement("code");
+    code.className = "language-sql";
+    code.textContent = sql;
+    pre.appendChild(code);
+    hljs.highlightElement(code);
     wrap.appendChild(pre);
   }
   messages.appendChild(wrap);
