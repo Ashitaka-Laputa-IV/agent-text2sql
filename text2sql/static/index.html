@@ -147,8 +147,12 @@ const send = document.getElementById("send");
 let threadId = null;
 
 function renderMarkdown(el, text) {
-  el.innerHTML = DOMPurify.sanitize(marked.parse(text));
-  el.querySelectorAll("pre code").forEach((block) => hljs.highlightElement(block));
+  try {
+    el.innerHTML = DOMPurify.sanitize(marked.parse(text));
+    el.querySelectorAll("pre code").forEach((block) => hljs.highlightElement(block));
+  } catch (err) {
+    el.textContent = text;
+  }
 }
 
 function addMsg(role, text, sqlList) {
@@ -169,7 +173,7 @@ function addMsg(role, text, sqlList) {
     code.className = "language-sql";
     code.textContent = sql;
     pre.appendChild(code);
-    hljs.highlightElement(code);
+    try { hljs.highlightElement(code); } catch (err) { /* 高亮失败不影响显示 */ }
     wrap.appendChild(pre);
   }
   messages.appendChild(wrap);
@@ -200,6 +204,7 @@ form.addEventListener("submit", async (e) => {
   } catch (err) {
     pending.querySelector(".bubble").innerHTML =
       '<span class="status">请求失败：' + err.message + "</span>";
+    if (!pending.isConnected) messages.appendChild(pending);
   } finally {
     send.disabled = false;
     input.focus();
