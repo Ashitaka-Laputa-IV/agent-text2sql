@@ -1,6 +1,6 @@
 import pathlib
 
-from langchain_openai import ChatOpenAI
+from langchain.chat_models import init_chat_model
 from langchain_community.agent_toolkits import SQLDatabaseToolkit
 from langchain_community.utilities import SQLDatabase
 from deepagents import create_deep_agent
@@ -10,11 +10,12 @@ from langgraph.checkpoint.memory import MemorySaver
 from config import MODEL_NAME, MODEL_BASE_URL, MODEL_API, DB_URI
 from guard import apply_readonly_guard
 
-model = ChatOpenAI(
-    model=MODEL_NAME,
+model = init_chat_model(
+    MODEL_NAME,
+    model_provider="openai",
+    temperature=0,
     base_url=MODEL_BASE_URL,
     api_key=MODEL_API,
-    temperature=0,
 )
 
 db = SQLDatabase.from_uri(DB_URI)
