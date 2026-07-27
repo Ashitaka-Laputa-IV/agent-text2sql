@@ -86,6 +86,13 @@
   .sql {
     margin-top: 8px;
     max-width: 85%;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  .sql::before { content: "SQL"; display: block; color: var(--muted); font-size: 11px; margin-bottom: 4px; }
+  .sql code,
+  .sql code.hljs {
+    display: block;
     font-family: Consolas, monospace;
     font-size: 13px;
     background: #11141b;
@@ -95,7 +102,6 @@
     white-space: pre-wrap;
     word-break: break-all;
   }
-  .sql::before { content: "SQL"; display: block; color: var(--muted); font-size: 11px; margin-bottom: 4px; }
   .status { color: var(--muted); font-size: 13px; }
   form {
     display: flex;
@@ -144,10 +150,23 @@ const input = document.getElementById("input");
 const send = document.getElementById("send");
 let threadId = null;
 
+function highlightSqlText(text) {
+  if (typeof hljs === "undefined") return text;
+  try {
+    return hljs.highlight(text, { language: "sql" }).value;
+  } catch (err) {
+    return text;
+  }
+}
+
 function renderMarkdown(el, text) {
   try {
     el.innerHTML = DOMPurify.sanitize(marked.parse(text));
-    el.querySelectorAll("pre code").forEach((block) => hljs.highlightElement(block));
+    // 本应用代码块均为 SQL，强制按 SQL 高亮（不依赖自动识别）
+    el.querySelectorAll("pre code").forEach((block) => {
+      block.innerHTML = highlightSqlText(block.textContent);
+      block.classList.add("hljs");
+    });
   } catch (err) {
     el.textContent = text;
   }
@@ -175,10 +194,9 @@ function addMsg(role, text, sqlList) {
     const pre = document.createElement("div");
     pre.className = "sql";
     const code = document.createElement("code");
-    code.className = "language-sql";
-    code.textContent = sql;
+    code.className = "language-sql hljs";
+    code.innerHTML = highlightSqlText(sql);
     pre.appendChild(code);
-    try { hljs.highlightElement(code); } catch (err) { /* 高亮失败不影响显示 */ }
     wrap.appendChild(pre);
   }
   messages.appendChild(wrap);
